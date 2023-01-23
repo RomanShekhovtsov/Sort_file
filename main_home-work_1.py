@@ -1,6 +1,6 @@
 import os
 
-main_path = 'd:\\down'
+main_path = 'd:\\hlam'
 
 # key names will be folder names!
 extensions = {
@@ -36,7 +36,7 @@ extensions = {
 }
 
 
-# also creates folders from dictionary keys
+# також створює папки з ключів словника
 def create_folders_from_list(folder_path, folder_names):
     for folder in folder_names:
         if not os.path.exists(f'{folder_path}\\{folder}'):
