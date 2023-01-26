@@ -1,4 +1,7 @@
 import os
+import sys
+from  sys import argv
+
 
 main = 'd:\\down'
 
@@ -79,6 +82,10 @@ def remove_empty_folders(folder_path):
 
 
 if __name__ == "__main__":
+    print(argv)
+    folder_name = argv[1]
+    main = folder_name
     create_folders_from_list(main, extensions)
     sort_files(main)
     remove_empty_folders(main)
+    folder_name = argv[1]
