@@ -1,6 +1,4 @@
 import os
-from sys import argv
-main_home_work_1 = argv
 
 main = 'd:\\down'
 
