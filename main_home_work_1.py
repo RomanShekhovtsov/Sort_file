@@ -1,10 +1,8 @@
 import os
-import sys
-if __name__ == "__main__":
-    for main_home_work in sys.argv:
-        print (main_home_work)
+from sys import argv
+main_home_work_1 = argv
 
-main_path = 'd:\\hlam'
+main = 'd:\\down'
 
 # key names will be folder names!
 extensions = {
@@ -40,7 +38,7 @@ extensions = {
 }
 
 
-# також створює папки з ключів словника
+# also creates folders from dictionary keys
 def create_folders_from_list(folder_path, folder_names):
     for folder in folder_names:
         if not os.path.exists(f'{folder_path}\\{folder}'):
@@ -70,7 +68,7 @@ def sort_files(folder_path):
         for dict_key_int in range(len(ext_list)):
             if extension in ext_list[dict_key_int][1]:
                 print(f'Moving {file_name} in {ext_list[dict_key_int][0]} folder\n')
-                os.rename(file_path, f'{main_path}\\{ext_list[dict_key_int][0]}\\{file_name}')
+                os.rename(file_path, f'{main}\\{ext_list[dict_key_int][0]}\\{file_name}')
 
 
 def remove_empty_folders(folder_path):
@@ -83,6 +81,6 @@ def remove_empty_folders(folder_path):
 
 
 if __name__ == "__main__":
-    create_folders_from_list(main_path, extensions)
-    sort_files(main_path)
-    remove_empty_folders(main_path)
+    create_folders_from_list(main, extensions)
+    sort_files(main)
+    remove_empty_folders(main)
