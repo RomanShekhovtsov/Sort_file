@@ -1,91 +1,113 @@
 import os
+import shutil
+import string
 import sys
-from  sys import argv
+
+# Создаю функцию normalize, которая будет выполнять требуемые операции над именами файлов.
+def normalize(name):
+    translit_dict = {
+        'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'e', 'ж': 'zh', 'з': 'z', 'и': 'i', 'й': 'i',
+        'к': 'k', 'л': 'l', 'м': 'm', 'н': 'n', 'о': 'o', 'п': 'p', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u', 'ф': 'f',
+        'х': 'h', 'ц': 'c', 'ч': 'ch', 'ш': 'sh', 'щ': 'sh', 'ъ': '', 'ы': 'y', 'ь': '', 'э': 'e', 'ю': 'yu', 'я': 'ya',
+        'А': 'A', 'Б': 'B', 'В': 'V', 'Г': 'G', 'Д': 'D', 'Е': 'E', 'Ё': 'E', 'Ж': 'Zh', 'З': 'Z', 'И': 'I', 'Й': 'I',
+        'К': 'K', 'Л': 'L', 'М': 'M', 'Н': 'N', 'О': 'O', 'П': 'P', 'Р': 'R', 'С': 'S', 'Т': 'T', 'У': 'U', 'Ф': 'F',
+        'Х': 'H', 'Ц': 'C', 'Ч': 'Ch', 'Ш': 'Sh', 'Щ': 'Sh', 'Ъ': '', 'Ы': 'Y', 'Ь': '', 'Э': 'E', 'Ю': 'Yu', 'Я': 'Ya'
+    }
+    valid_chars = "-_.() %s%s" % (string.ascii_letters, string.digits)
+
+    normalized_name = ''
+    for char in name:
+        if char in valid_chars:
+            normalized_name += char
+        elif char in translit_dict:
+            normalized_name += translit_dict[char]
+        else:
+            normalized_name += '_'
+
+    return normalized_name
+
+# Создаю функцию process_folder, которая будет выполнять сортировку файлов и папок внутри указанной папки.\
+def process_folder(folder_path):
+    image_extensions = ('JPEG', 'PNG', 'JPG', 'SVG')
+    video_extensions = ('AVI', 'MP4', 'MOV', 'MKV')
+    document_extensions = ('DOC', 'DOCX', 'TXT', 'PDF', 'XLSX', 'PPTX')
+    audio_extensions = ('MP3', 'OGG', 'WAV', 'AMR')
+    archive_extensions = ('ZIP', 'GZ', 'TAR')
+
+    known_extensions = set()
+    unknown_extensions = set()
+
+    for root, dirs, files in os.walk(folder_path):
+        for file in files:
+            file_name, file_ext = os.path.splitext(file)
+            file_ext = file_ext[1:].upper()
+            known_extensions.add(file_ext)
+
+            if file_ext in image_extensions:
+                destination_folder = os.path.join(folder_path, 'images')
+                process_file(file, root, destination_folder)
+            elif file_ext in video_extensions:
+                destination_folder = os.path.join(folder_path, 'video')
+                process_file(file, root, destination_folder)
+            elif file_ext in document_extensions:
+                destination_folder = os.path.join(folder_path, 'documents')
+                process_file(file, root, destination_folder)
+            elif file_ext in audio_extensions:
+                destination_folder = os.path.join(folder_path, 'audio')
+                process_file(file, root, destination_folder)
+            elif file_ext in archive_extensions:
+                destination_folder = os.path.join(folder_path, 'archives')
+                process_archive(file, root, destination_folder)
+            else:
+                unknown_extensions.add(file_ext)
+
+    # print('Known extensions:', known_extensions)
+    # print('Unknown extensions:', unknown_extensions)
+# Создаю функцию process_file, которая будет отвечать за перемещение и переименование файлов в соответствующие папки.
+# В этой функции, можно использовать функцию normalize для нормализации имени файла.
+def process_file(file, source_folder, destination_folder):
+    source_path = os.path.join(source_folder, file)
+    destination_path = os.path.join(destination_folder, normalize(file))
+
+    if not os.path.exists(destination_folder):
+        os.makedirs(destination_folder)
+
+    shutil.move(source_path, destination_path)
+    print('Moved:', file)
+# Таким образом, функция process_file() отвечает за перемещение файла из исходной папки
+# в папку назначения с сохранением имени файла и выводит информацию о перемещении.
 
 
-main = 'd:\\down'
+# Создаю функцию process_archive, которая будет отвечать за распаковку архивов и перемещение их содержимого в соответствующие папки.
+# В этой функции, вы также можете использовать функцию normalize для нормализации имен файлов.
+def process_archive(file, source_folder, destination_folder):
+    archive_path = os.path.join(source_folder, file)
 
-# key names will be folder names!
-extensions = {
+    if not os.path.exists(destination_folder):
+        os.makedirs(destination_folder)
 
-    'video': ['mp4', 'mov', 'avi', 'mkv', 'wmv', '3gp', '3g2', 'mpg', 'mpeg', 'm4v', 'h264', 'flv',
-              'rm', 'swf', 'vob'],
+    shutil.unpack_archive(archive_path, destination_folder)
 
-    'data': ['sql', 'sqlite', 'sqlite3', 'csv', 'dat', 'db', 'log', 'mdb', 'sav', 'tar', 'xml'],
+    archive_name, _ = os.path.splitext(file)
+    archive_files = os.listdir(destination_folder)
 
-    'audio': ['mp3', 'wav', 'ogg', 'flac', 'aif', 'mid', 'midi', 'mpa', 'wma', 'wpl', 'cda'],
+    for archive_file in archive_files:
+        archive_file_path = os.path.join(destination_folder, archive_file)
+        if os.path.isfile(archive_file_path):
+            destination_subfolder = os.path.join(destination_folder, archive_name)
+            process_file(archive_file, destination_folder, destination_subfolder)
 
-    'image': ['jpg', 'png', 'bmp', 'ai', 'psd', 'ico', 'jpeg', 'ps', 'svg', 'tif', 'tiff'],
+    shutil.rmtree(destination_folder)
+    # print('Unpacked and moved:', file)
 
-    'archive': ['zip', 'rar', '7z', 'z', 'gz', 'rpm', 'arj', 'pkg', 'deb'],
-
-    'text': ['pdf', 'txt', 'doc', 'docx', 'rtf', 'tex', 'wpd', 'odt'],
-
-    '3d': ['stl', 'obj', 'fbx', 'dae', '3ds', 'iges', 'step'],
-
-    'presentation': ['pptx', 'ppt', 'pps', 'key', 'odp'],
-
-    'spreadsheet': ['xlsx', 'xls', 'xlsm', 'ods'],
-
-    'font': ['otf', 'ttf', 'fon', 'fnt'],
-
-    'gif': ['gif'],
-
-    'exe': ['exe'],
-
-    'bat': ['bat'],
-
-    'apk': ['apk']
-}
+# Внутри  скрипта, добавляю код для получения пути к целевой папке из аргументов командной строки и вызова функции `process_folder`.
+if __name__ == '__main__':
+    if len(sys.argv) > 1:
+        target_folder = sys.argv[1]
+        process_folder(target_folder)
+    else:
+        print('Please provide the target folder path as a command line argument.')
 
 
-# also creates folders from dictionary keys
-def create_folders_from_list(folder_path, folder_names):
-    for folder in folder_names:
-        if not os.path.exists(f'{folder_path}\\{folder}'):
-            os.mkdir(f'{folder_path}\\{folder}')
 
 
-def get_subfolder_paths(folder_path) -> list:
-    subfolder_paths = [f.path for f in os.scandir(folder_path) if f.is_dir()]
-
-    return subfolder_paths
-
-
-def get_file_paths(folder_path) -> list:
-    file_paths = [f.path for f in os.scandir(folder_path) if not f.is_dir()]
-
-    return file_paths
-
-
-def sort_files(folder_path):
-    file_paths = get_file_paths(folder_path)
-    ext_list = list(extensions.items())
-
-    for file_path in file_paths:
-        extension = file_path.split('.')[-1]
-        file_name = file_path.split('\\')[-1]
-
-        for dict_key_int in range(len(ext_list)):
-            if extension in ext_list[dict_key_int][1]:
-                print(f'Moving {file_name} in {ext_list[dict_key_int][0]} folder\n')
-                os.rename(file_path, f'{main}\\{ext_list[dict_key_int][0]}\\{file_name}')
-
-
-def remove_empty_folders(folder_path):
-    subfolder_paths = get_subfolder_paths(folder_path)
-
-    for p in subfolder_paths:
-        if not os.listdir(p):
-            print('Deleting empty folder:', p.split('\\')[-1], '\n')
-            os.rmdir(p)
-
-
-if __name__ == "__main__":
-    print(argv)
-    folder_name = argv[1]
-    main = folder_name
-    create_folders_from_list(main, extensions)
-    sort_files(main)
-    remove_empty_folders(main)
-    folder_name = argv[1]
