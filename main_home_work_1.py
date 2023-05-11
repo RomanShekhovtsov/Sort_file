@@ -38,7 +38,6 @@ def process_folder(folder_path):
     unknown_extensions = set()
     folder_path = r"C:\Users\User\Desktop\Разобрать"
 
-
     for root, dirs, files in os.walk(folder_path):
         for file in files:
             file_name, file_ext = os.path.splitext(file)
